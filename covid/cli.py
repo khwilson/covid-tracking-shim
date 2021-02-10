@@ -1,16 +1,20 @@
-from typing import Optional
-import click
-import requests
-import sys
-from contextlib import contextmanager
+"""
+CLI for accessing various parts of the Covid data ecosystem
+"""
+import codecs
+import csv
 import gzip
 import io
-import csv
-import codecs
+import sys
+from contextlib import contextmanager
+from typing import ContextManager, Iterable, Optional
+
+import click
+import requests
 
 
 @contextmanager
-def _open_for_write(output: Optional[str]):
+def _open_for_write(output: Optional[str]) -> ContextManager[io.TextIOBase]:
     output = output or "-"
     if output == "-":
         yield sys.stdout
@@ -23,7 +27,9 @@ def _open_for_write(output: Optional[str]):
                 yield outfile
 
 
-def iterable_to_stream(iterable, buffer_size=io.DEFAULT_BUFFER_SIZE):
+def iterable_to_stream(
+    iterable: Iterable[bytes], buffer_size: int = io.DEFAULT_BUFFER_SIZE
+) -> io.BufferedReader:
     """
     Lets you use an iterable (e.g. a generator) that yields bytestrings as a read-only
     input stream.
@@ -106,7 +112,9 @@ def cdc_cases_command(limit: int, max_records: Optional[int], output: Optional[s
             ) as response:
                 response.raise_for_status()
                 reader = csv.reader(
-                    io.TextIOWrapper(iterable_to_stream(response.iter_content(chunk_size=8192)))
+                    io.TextIOWrapper(
+                        iterable_to_stream(response.iter_content(chunk_size=8192))
+                    )
                 )
 
                 # This might be a little ridiculous but technically nothing is stopping them from
