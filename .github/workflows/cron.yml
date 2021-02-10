@@ -1,0 +1,45 @@
+name: Process data
+on:
+  schedule:
+    - cron: '12 12 * * *'
+
+jobs:
+  scheduled_job:
+    runs-on: ubuntu-20.04
+
+    strategy:
+      matrix:
+        python_version:
+          - 3.8
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install poetry
+        uses: snok/install-poetry@v1.1.1
+        with:
+          version: 1.1.4
+          virtualenvs-in-project: false
+
+      - name: Pull cache if available
+        uses: actions/cache@v2
+        with:
+          path: .venv
+          key: poetry-use-python-${{ matrix.python_version }}-${{ hashFiles('**/poetry.lock') }}
+          restore-keys: |
+            poetry-use-python-${{ matrix.python_version }}
+
+      - name: Install dependencies
+        run: |
+          poetry install
+
+      - name: Run the job
+        run: poetry run covid cdc cases -l 500 -o cases.csv.gz
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          path: cases.csv.gz
+          name: cases-data
+          retention-days: 7

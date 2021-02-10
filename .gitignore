@@ -1,0 +1,25 @@
+# Python cruft
+*.pyc
+__pycache__
+*.pytest_cache
+*.egg-info
+dist/
+.venv
+tmp
+data
+.ipynb_checkpoints
+
+prev/*.csv
+output/*.png
+geocode_history/*
+
+# Editor cruft
+*~
+.vscode/
+
+# Secrets
+google_secrets.json
+.env
+
+# Mac cruft
+.DS_Store
